@@ -137,7 +137,7 @@ success to initialize, use 4092 ms
     }
     
 结论4：
-* 尽量使用COW的addAll方法，批量增加多个元素；少用add方法，1个元素1个元素的增加
+* 尽量使用COW的addAll方法，批量增加多个元素；少用add方法，避免1个元素1个元素的增加
 
 
 
