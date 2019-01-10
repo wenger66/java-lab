@@ -80,7 +80,7 @@ CopyOnWriteList的add方法简明易懂。获取旧数组(Object[])，复制到�
 
 ![图3](./3.png)
 
-图4的测试场景是COW容量100万，每隔1秒8个线程读，2个线程写，Java堆设置-Xmx1G。无明显CPU冲高，内存溢出现象
+图4的测试场景是COW容量100万，每隔1秒16个线程读，4个线程写，Java堆设置-Xmx1G。无明显CPU冲高，内存溢出现象
 ![图4](./4.png)
 
 既然 CopyOnWriteList 没有性能问题，那么为什么我们的Javadump中有那么多线程在使用CopyOnWriteList 的add方法
