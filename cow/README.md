@@ -117,7 +117,7 @@ success to initialize, use 4092 ms
 再结合我们线程栈指向的代码，我们在**局部变量**中使用了CopyOnWriteList。
 一个List临时存储数据，肯定和上面的初始化代码一样要大量调用List的add方法
 
-所以有了第3条结论
+所以有了结论3：
 * 局部不要使用CopyOnWriteList，大才小用了，而且循环向CopyOnWriteList中add会不断复制数组，可能会导致CPU冲高(单线程百万级循环)。
 全局如果要考虑并发，可以使用CopyOnWriteList，避免循环add即可
 
@@ -136,6 +136,7 @@ success to initialize, use 4092 ms
         System.out.println("success to initialize, use "+(end-start)+" ms ");
     }
     
+结论4：
 * 尽量使用COW的addAll方法，少用add方法
 
 
