@@ -1,3 +1,4 @@
+#COW
 ##背景
 团队遇到一次内存溢出的性能问题，解决这个问题的同时，我们观察到Javadump(OpenJ9)中有多个线程都在使用CopyOnWriteArrayList的add方法
 
