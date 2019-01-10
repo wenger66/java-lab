@@ -136,7 +136,7 @@ success to initialize, use 4092 ms
         System.out.println("success to initialize, use "+(end-start)+" ms ");
     }
     
-*尽量使用COW的addAll方法，少用add方法
+* 尽量使用COW的addAll方法，少用add方法
 
 
 
