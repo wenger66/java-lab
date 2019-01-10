@@ -67,5 +67,5 @@ CopyOnWriteList的add方法简明易懂。获取旧数组(Object[])，复制到�
  通过jvisualvm多次观察内存dump的快照，每次都只有一个大数据量的Object[]，还有一些空的父亲是CopyOnWriteList的Object[],
  这些对象就是往COW新增元素留下的还没有被GC回收的旧数组，他们只有占用很小的自身大小的内存，而且很容易被回收
 
-[](./1.png)
-[](./2.png) 
+![](./1.png)
+![](./2.png) 
