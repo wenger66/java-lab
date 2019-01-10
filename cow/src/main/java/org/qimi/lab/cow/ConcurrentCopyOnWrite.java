@@ -13,7 +13,7 @@ public class ConcurrentCopyOnWrite {
     // 测试对象的个数
     private static final int TEST_OBJECT_SIZE = 1000000;
     // 测试使用线程数
-    private static final int TEST_THREAD_SIZE = 10;
+    private static final int TEST_THREAD_SIZE = 20;
     // 读线程占总线程数的比例，默认80%
     private static final float TEST_READ_THREAD_SIZE = 0.8f;
     // 写线程占总线程数的比例，默认20%
