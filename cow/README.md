@@ -1,5 +1,4 @@
-#COW
-##背景
+## 背景
 团队遇到一次内存溢出的性能问题，解决这个问题的同时，我们观察到Javadump(OpenJ9)中有多个线程都在使用CopyOnWriteArrayList的add方法
 
     3XMTHREADINFO      "dw-378 - GET /api/res/v1/subnetworks/06670f87-1e4f-49df-9910-858028199616/fddv3.eutrancellfdds?includeAttr=userLabel,nbiIdDn&queryDn=true" J9VMThread:0x00000000013A0B00, omrthread_t:0x00007F3578004468, java/lang/Thread:0x000000078255C300, state:R, prio=5
@@ -50,7 +49,7 @@ CopyOnWriteList的add方法简明易懂。获取旧数组(Object[])，复制到�
 * COW在容量较大时，并发读写会有内存溢出风险吗？
 * COW在新增元素时，add方法有没有性能问题？能不能使用？
 
-##实验
+## 实验
 核心思路就是制造一个大容量的COW，并发读写
  1.初始化COW容器
  2.一个定时器负责启动读线程，一个定时器负责启动写线程
@@ -61,7 +60,7 @@ CopyOnWriteList的add方法简明易懂。获取旧数组(Object[])，复制到�
  
  [实验代码](https://github.com/wenger66/java-lab/tree/master/cow)
  
- ##结论
+ ## 结论
  * COW在写时的复制，新数组引用了老数组中元素，并没有拷贝元素
  
  通过jvisualvm多次观察内存dump的快照，每次都只有一个大数据量的Object[]，还有一些空的父亲是CopyOnWriteList的Object[],
