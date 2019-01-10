@@ -118,8 +118,8 @@ success to initialize, use 4092 ms
 一个List临时存储数据，肯定和上面的初始化代码一样要大量调用List的add方法
 
 所以有了第3条结论
-* 局部不要使用CopyOnWriteList，大才小用了，而且循环向CopyOnWriteList中add会不断复制数组(单线程百万级循环)，可能会导致CPU冲高。
-全局如果要考虑并发问题，完全可以使用CopyOnWriteList
+* 局部不要使用CopyOnWriteList，大才小用了，而且循环向CopyOnWriteList中add会不断复制数组，可能会导致CPU冲高(单线程百万级循环)。
+全局如果要考虑并发，可以使用CopyOnWriteList，避免循环add即可
 
 如果一定要在局部使用CopyOnWriteList，该如何初始化，如下即可
     
