@@ -106,13 +106,13 @@ success to initialize, use 421 ms
 success to initialize, use 4092 ms
 
 初始化100万元素，-Xmx1G 速度非常慢，耗时7分10秒，而且CPU冲高。
-![图5](./4.png)
+![图5](./5.png)
 
 初始化100万元素， -Xmx2G -Xms1G，速度没有改观，耗时6分50秒，CPU还是不低
-![图6](./5.png)
+![图6](./6.png)
 
 再加大内存，初始化100万元素，-Xmx3G -Xms2G，速度还变多了，CPU不低
-![图7](./6.png)
+![图7](./7.png)
 
 再结合我们线程栈指向的代码，我们在**局部变量**中使用了CopyOnWriteList。
 一个List临时存储数据，肯定和上面的初始化代码一样要大量调用List的add方法
