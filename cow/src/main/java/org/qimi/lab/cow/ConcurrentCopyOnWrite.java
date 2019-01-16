@@ -11,7 +11,7 @@ public class ConcurrentCopyOnWrite {
      * TODO printf为什么会阻塞，println好像可以并发
      */
     // 测试对象的个数
-    private static final int TEST_OBJECT_SIZE = 1000000;
+    private static final int TEST_OBJECT_SIZE = 100000;
     // 测试使用线程数
     private static final int TEST_THREAD_SIZE = 20;
     // 读线程占总线程数的比例，默认80%
@@ -27,7 +27,7 @@ public class ConcurrentCopyOnWrite {
     // 倒计时闩锁
     private static final CountDownLatch endGate = new CountDownLatch(TEST_TIME);
     // 测试对象缓存列表
-    private static List<Element> elements = new CopyOnWriteArrayList<Element>();
+    private static List<Element> cache = new CopyOnWriteArrayList<Element>();
     // 读写线程池
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(TEST_THREAD_SIZE);
     // 批次线程池，读一批，写一批
@@ -53,7 +53,7 @@ public class ConcurrentCopyOnWrite {
         for(int i=0;i< TEST_OBJECT_SIZE; i++) {
             list.add(new Element());
         }
-        elements.addAll(list);
+        cache.addAll(list);
         System.out.println("success to initialize");
     }
 
@@ -91,21 +91,21 @@ public class ConcurrentCopyOnWrite {
     private static class WriteTask implements Runnable{
         public void run() {
             Element element = new Element();
-            elements.add(element);
+            cache.add(element);
             System.out.println("success to write copyonwrite list, thread:"+ Thread.currentThread().getName());
         }
     }
 
     private static class ReadTask implements Runnable{
         public void run() {
-            int totalSize = elements.size();
+            int totalSize = cache.size();
             // 最多只循环10000个元素，防止因为循环而导致CPU冲高
             int cycleSize = 10000;
             if(totalSize < 10000) {
                 cycleSize = totalSize;
             }
             for(int i=0;i<cycleSize;i++) {
-                elements.get(i);
+                cache.get(i);
             }
             System.out.println("success to read copyonwrite list, thread:"+Thread.currentThread().getName());
         }
