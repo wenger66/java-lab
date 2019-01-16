@@ -56,4 +56,15 @@ public class Element {
     public void setUuid5(String uuid5) {
         this.uuid5 = uuid5;
     }
+
+    @Override
+    public String toString() {
+        return "Element{" +
+                "uuid='" + uuid + '\'' +
+                ", uuid2='" + uuid2 + '\'' +
+                ", uuid3='" + uuid3 + '\'' +
+                ", uuid4='" + uuid4 + '\'' +
+                ", uuid5='" + uuid5 + '\'' +
+                '}';
+    }
 }
