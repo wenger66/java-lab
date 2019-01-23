@@ -28,6 +28,7 @@ public class ConcurrentCopyOnWrite {
     private static final CountDownLatch endGate = new CountDownLatch(TEST_TIME);
     // 测试对象缓存列表
     private static List<Element> cache = new CopyOnWriteArrayList<Element>();
+
     // 读写线程池
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(TEST_THREAD_SIZE);
     // 批次线程池，读一批，写一批
