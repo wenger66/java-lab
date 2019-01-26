@@ -13,3 +13,6 @@
 
 * [rw-concurrency](https://github.com/wenger66/java-lab/tree/master/rw-concurrency/README.md)
 关于并发读写多种锁实现的性能实验，来自Martin Thompson，Java的大牛，我只是对源码做了注释和简单分析
+
+* [aba](https://github.com/wenger66/java-lab/tree/master/aba/README.md)
+CAS的经典问题aba解释和解决
