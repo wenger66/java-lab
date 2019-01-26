@@ -4,8 +4,34 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ThreadMcService {
+
+    public static String BASIC_INFO = "\"{0}\" #{1} {2} prio={3} os_prio={4} tid={5} nid={6} {7} [{8}]\n";
+    public static String MONITOR_LOCKED = "\\   - locked {0}\n";
+    public static String NAME_STATE = "Name: {0}\nState: {1} on {2} owned by: {3}\n";
+    public static String NAME_STATE_LOCK_NAME = "Name: {0}\nState: {1} on {2}\n";
+    public static String NAME_STATE_LOCK_NAME_LOCK_OWNER = "Name: {0}\nState: {1} on {2} owned by: {3}\n";
+    public static String STACK_TRACE = "\nStack trace: \n";
+    public static String BLOCKED_COUNT_WAITED_COUNT = "Total blocked: {0}  Total waited: {1}\n";
+
+    private static Map<Long, Thread> threadMap = new HashMap<Long, Thread>();
+
+    static {
+        ThreadGroup group = Thread.currentThread().getThreadGroup();
+        while(group != null) {
+            Thread[] threads = new Thread[(int)(group.activeCount() * 1.2)];
+            int count = group.enumerate(threads, true);
+            for(int i = 0; i < count; i++) {
+                Thread thread = threads[i];
+                threadMap.put(thread.getId(), thread);
+            }
+            group = group.getParent();
+        }
+    }
 
     /**
      * "RMI TCP Connection(2)-10.43.91.153" #38 daemon prio=5 os_prio=0 tid=0x000000001a150800 nid=0x2954 runnable [0x000000001e7ee000]
@@ -29,6 +55,52 @@ public class ThreadMcService {
         return stringBuilder.toString();
     }
 
+    private String format(String paramString, Object... paramVarArgs) {
+        return MessageFormat.format(paramString, paramVarArgs);
+    }
+
+    public static Thread findThread(long threadId) {
+
+        return null;
+    }
+
+    private String threadIsDaemon(long threadId) {
+        Thread thread = threadMap.get(threadId);
+        if(thread!=null && thread.isDaemon()) {
+                return "daemon";
+        }
+        return "";
+    }
+
+    private String dumpThreadBasicInfo(ThreadInfo threadInfo) {
+        Thread t = threadMap.get(threadInfo.getThreadId());
+        String name = threadInfo.getThreadName();
+        String id = threadInfo.getThreadId()+"";
+        String daemon = t!=null?"daemon":"";
+        String priority = t!=null?t.getPriority()+"":"5";
+        String osPriority = t!=null?5-t.getPriority()+"":"0";
+        String tid = "";
+        String nid = "";
+        String state = threadInfo.getThreadState().toString();
+        String address = "";
+        return  format(BASIC_INFO, name, id, daemon, priority, osPriority, tid, nid, state, address);
+    }
+
+    /**
+     * Java thread priority	Linux nice value
+     * 1	4
+     * 2	3
+     * 3	2
+     * 4	1
+     * 5	0
+     * 6	-1
+     * 7	-2
+     * 8	-3
+     * 9	-4
+     * 10	-5
+     */
+
+
     private String dumpThread(ThreadInfo threadInfo) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -39,26 +111,28 @@ public class ThreadMcService {
             if(threadMXBean.isObjectMonitorUsageSupported()) {
                 arrayOfMonitorInfos = threadInfo.getLockedMonitors();
             }
+            stringBuilder.append(dumpThreadBasicInfo(threadInfo));
+
             if (threadInfo.getLockName() == null) {
-                stringBuilder.append(Resources.format(Messages.NAME_STATE, new Object[] {threadInfo
+                stringBuilder.append(format(NAME_STATE, new Object[] {threadInfo
                         .getThreadName(), threadInfo
                         .getThreadState().toString() }));
             } else if (threadInfo.getLockOwnerName() == null) {
-                stringBuilder.append(Resources.format(Messages.NAME_STATE_LOCK_NAME, new Object[] {threadInfo
+                stringBuilder.append(format(NAME_STATE_LOCK_NAME, new Object[] {threadInfo
                         .getThreadName(), threadInfo
                         .getThreadState().toString(), threadInfo
                         .getLockName() }));
             } else {
-                stringBuilder.append(Resources.format(Messages.NAME_STATE_LOCK_NAME_LOCK_OWNER, new Object[] {threadInfo
+                stringBuilder.append(format(NAME_STATE_LOCK_NAME_LOCK_OWNER, new Object[] {threadInfo
                         .getThreadName(), threadInfo
                         .getThreadState().toString(), threadInfo
                         .getLockName(), threadInfo
                         .getLockOwnerName() }));
             }
-            stringBuilder.append(Resources.format(Messages.BLOCKED_COUNT_WAITED_COUNT, new Object[] {
+            stringBuilder.append(format(BLOCKED_COUNT_WAITED_COUNT, new Object[] {
                     Long.valueOf(threadInfo.getBlockedCount()),
                     Long.valueOf(threadInfo.getWaitedCount()) }));
-            stringBuilder.append(Messages.STACK_TRACE);
+            stringBuilder.append(STACK_TRACE);
             int i = 0;
             for (StackTraceElement stackTraceElement : threadInfo.getStackTrace())
             {
@@ -66,7 +140,7 @@ public class ThreadMcService {
                 if (arrayOfMonitorInfos != null) {
                     for (MonitorInfo localMonitorInfo : arrayOfMonitorInfos) {
                         if (localMonitorInfo.getLockedStackDepth() == i) {
-                            stringBuilder.append(Resources.format(Messages.MONITOR_LOCKED, new Object[] { localMonitorInfo.toString() }));
+                            stringBuilder.append(format(MONITOR_LOCKED, new Object[] { localMonitorInfo.toString() }));
                         }
                     }
                 }
