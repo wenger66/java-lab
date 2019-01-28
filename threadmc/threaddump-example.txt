@@ -1,0 +1,63 @@
+"Monitor Ctrl-Break" #6 daemon prio=5 os_prio=0 tid=0x nid=0x [0x]
+   java.lang.Thread.State: RUNNABLE
+	at java.net.SocketInputStream.socketRead0(Native Method)
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116)
+	at java.net.SocketInputStream.read(SocketInputStream.java:170)
+	at java.net.SocketInputStream.read(SocketInputStream.java:141)
+	at sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:284)
+	at sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:326)
+	at sun.nio.cs.StreamDecoder.read(StreamDecoder.java:178)
+	- locked <1b6d3586> (a java.io.InputStreamReader)
+	at java.io.InputStreamReader.read(InputStreamReader.java:184)
+	at java.io.BufferedReader.fill(BufferedReader.java:161)
+	at java.io.BufferedReader.readLine(BufferedReader.java:324)
+	- locked <1b6d3586> (a java.io.InputStreamReader)
+	at java.io.BufferedReader.readLine(BufferedReader.java:389)
+	at com.intellij.rt.execution.application.AppMainV2$1.run(AppMainV2.java:64)
+
+   Locked ownable synchronizers:
+	- None
+
+"Attach Listener" #5 daemon prio=5 os_prio=0 tid=0x nid=0x [0x]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"Signal Dispatcher" #4 daemon prio=9 os_prio=-4 tid=0x nid=0x [0x]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"Finalizer" #3 daemon prio=8 os_prio=-3 tid=0x nid=0x [0x]
+   java.lang.Thread.State: WAITING
+	at java.lang.Object.wait(Native Method)
+	- waiting on <4554617c> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:143)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:164)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:209)
+
+   Locked ownable synchronizers:
+	- None
+
+"Reference Handler" #2 daemon prio=10 os_prio=-5 tid=0x nid=0x [0x]
+   java.lang.Thread.State: WAITING
+	at java.lang.Object.wait(Native Method)
+	- waiting on <74a14482> (a java.lang.ref.Reference$Lock)
+	at java.lang.Object.wait(Object.java:502)
+	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:157)
+
+   Locked ownable synchronizers:
+	- None
+
+"main" #1 daemon prio=5 os_prio=0 tid=0x nid=0x [0x]
+   java.lang.Thread.State: RUNNABLE
+	at sun.management.ThreadImpl.dumpThreads0(Native Method)
+	at sun.management.ThreadImpl.dumpAllThreads(ThreadImpl.java:446)
+	at org.qimi.lab.threadmc.ThreadMcService.dump(ThreadMcService.java:20)
+	- locked <1540e19d> (a org.qimi.lab.threadmc.ThreadMcService)
+	at org.qimi.lab.threadmc.ThreadMcApp.main(ThreadMcApp.java:7)
+
+   Locked ownable synchronizers:
+	- None
