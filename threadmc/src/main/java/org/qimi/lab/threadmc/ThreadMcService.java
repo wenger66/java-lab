@@ -1,26 +1,32 @@
 package org.qimi.lab.threadmc;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MonitorInfo;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ThreadMcService {
 
-    public static String BASIC_INFO = "\"{0}\" #{1} {2} prio={3} os_prio={4} tid={5} nid={6} {7} [{8}]\n";
-    public static String MONITOR_LOCKED = "\\   - locked {0}\n";
-    public static String NAME_STATE = "Name: {0}\nState: {1} on {2} owned by: {3}\n";
-    public static String NAME_STATE_LOCK_NAME = "Name: {0}\nState: {1} on {2}\n";
-    public static String NAME_STATE_LOCK_NAME_LOCK_OWNER = "Name: {0}\nState: {1} on {2} owned by: {3}\n";
-    public static String STACK_TRACE = "\nStack trace: \n";
-    public static String BLOCKED_COUNT_WAITED_COUNT = "Total blocked: {0}  Total waited: {1}\n";
+    private Map<Long, Thread> threadMap = new HashMap<Long, Thread>();
 
-    private static Map<Long, Thread> threadMap = new HashMap<Long, Thread>();
+    /**
+     * ThreadDump主方法
+     * @return
+     */
+    public synchronized String dump() {
+        initThreadMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        ThreadInfo[] threads = threadMXBean.dumpAllThreads(true, false);
+        printThreads(stringBuilder, threadMXBean, threads);
+        clearThreadMap();
+        return stringBuilder.toString();
+    }
 
-    static {
+    /**
+     * 初始化线程对象的Map，用来获取daemon和priority
+     */
+    private void initThreadMap() {
         ThreadGroup group = Thread.currentThread().getThreadGroup();
         while(group != null) {
             Thread[] threads = new Thread[(int)(group.activeCount() * 1.2)];
@@ -34,119 +40,153 @@ public class ThreadMcService {
     }
 
     /**
-     * "RMI TCP Connection(2)-10.43.91.153" #38 daemon prio=5 os_prio=0 tid=0x000000001a150800 nid=0x2954 runnable [0x000000001e7ee000]
-     *    java.lang.Thread.State: RUNNABLE
-     * 	at java.net.SocketInputStream.socketRead0(Native Method)
-     * 	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116)
-     * 	at java.net.SocketInputStream.read(SocketInputStream.java:170)
-     * 	at java.net.SocketInputStream.read(SocketInputStream.java:141)
-     * 	at java.io.BufferedInputStream.fill(BufferedInputStream.java:246)
-     * 	at java.io.BufferedInputStream.read(BufferedInputStream.java:265)
-     * 	- locked <0x00000000edb203b8> (a java.io.BufferedInputStream)
-     * @return
+     * 清理线程对象的Map
      */
-    public synchronized String dump() {
-        StringBuilder stringBuilder = new StringBuilder();
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        ThreadInfo[] arrayOfThreadInfo = threadMXBean.dumpAllThreads(true, false);
-        for (ThreadInfo threadInfo : arrayOfThreadInfo) {
-            stringBuilder.append(dumpThread(threadInfo));
-        }
-        return stringBuilder.toString();
-    }
-
-    private String format(String paramString, Object... paramVarArgs) {
-        return MessageFormat.format(paramString, paramVarArgs);
-    }
-
-    public static Thread findThread(long threadId) {
-
-        return null;
-    }
-
-    private String threadIsDaemon(long threadId) {
-        Thread thread = threadMap.get(threadId);
-        if(thread!=null && thread.isDaemon()) {
-                return "daemon";
-        }
-        return "";
-    }
-
-    private String dumpThreadBasicInfo(ThreadInfo threadInfo) {
-        Thread t = threadMap.get(threadInfo.getThreadId());
-        String name = threadInfo.getThreadName();
-        String id = threadInfo.getThreadId()+"";
-        String daemon = t!=null?"daemon":"";
-        String priority = t!=null?t.getPriority()+"":"5";
-        String osPriority = t!=null?5-t.getPriority()+"":"0";
-        String tid = "";
-        String nid = "";
-        String state = threadInfo.getThreadState().toString();
-        String address = "";
-        return  format(BASIC_INFO, name, id, daemon, priority, osPriority, tid, nid, state, address);
+    private void clearThreadMap() {
+        threadMap.clear();
     }
 
     /**
-     * Java thread priority	Linux nice value
-     * 1	4
-     * 2	3
-     * 3	2
-     * 4	1
-     * 5	0
-     * 6	-1
-     * 7	-2
-     * 8	-3
-     * 9	-4
-     * 10	-5
+     * 转储所有线程，参考visualvm中Jmx的实现
+     * @param sb
+     * @param threadMXBean
+     * @param threads
      */
-
-
-    private String dumpThread(ThreadInfo threadInfo) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        if (threadInfo != null)
-        {
-            ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-            MonitorInfo[] arrayOfMonitorInfos = null;
-            if(threadMXBean.isObjectMonitorUsageSupported()) {
-                arrayOfMonitorInfos = threadInfo.getLockedMonitors();
-            }
-            stringBuilder.append(dumpThreadBasicInfo(threadInfo));
-
-            if (threadInfo.getLockName() == null) {
-                stringBuilder.append(format(NAME_STATE, new Object[] {threadInfo
-                        .getThreadName(), threadInfo
-                        .getThreadState().toString() }));
-            } else if (threadInfo.getLockOwnerName() == null) {
-                stringBuilder.append(format(NAME_STATE_LOCK_NAME, new Object[] {threadInfo
-                        .getThreadName(), threadInfo
-                        .getThreadState().toString(), threadInfo
-                        .getLockName() }));
-            } else {
-                stringBuilder.append(format(NAME_STATE_LOCK_NAME_LOCK_OWNER, new Object[] {threadInfo
-                        .getThreadName(), threadInfo
-                        .getThreadState().toString(), threadInfo
-                        .getLockName(), threadInfo
-                        .getLockOwnerName() }));
-            }
-            stringBuilder.append(format(BLOCKED_COUNT_WAITED_COUNT, new Object[] {
-                    Long.valueOf(threadInfo.getBlockedCount()),
-                    Long.valueOf(threadInfo.getWaitedCount()) }));
-            stringBuilder.append(STACK_TRACE);
-            int i = 0;
-            for (StackTraceElement stackTraceElement : threadInfo.getStackTrace())
-            {
-                stringBuilder.append(stackTraceElement.toString() + "\n");
-                if (arrayOfMonitorInfos != null) {
-                    for (MonitorInfo localMonitorInfo : arrayOfMonitorInfos) {
-                        if (localMonitorInfo.getLockedStackDepth() == i) {
-                            stringBuilder.append(format(MONITOR_LOCKED, new Object[] { localMonitorInfo.toString() }));
-                        }
-                    }
-                }
-                i++;
+    private void printThreads(StringBuilder sb, ThreadMXBean threadMXBean, ThreadInfo[] threads) {
+        for (ThreadInfo thread : threads) {
+            if (thread != null) {
+                printThread(sb, threadMXBean, thread);
             }
         }
-        return stringBuilder.toString();
+    }
+
+    /**
+     * 转储单个线程
+     * @param sb
+     * @param threadMXBean
+     * @param thread
+     */
+    private void printThread(StringBuilder sb, ThreadMXBean threadMXBean, ThreadInfo thread) {
+        MonitorInfo[] monitors = null;
+        if (threadMXBean.isObjectMonitorUsageSupported()) {
+            monitors = thread.getLockedMonitors();
+        }
+//        sb.append("\n\"" + thread.getThreadName() + "\" - Thread t@" + thread.getThreadId() + "\n");
+        printThreadBasicInfo(sb, thread);
+        sb.append("   java.lang.Thread.State: " + thread.getThreadState());
+        sb.append("\n");
+        int index = 0;
+        for (StackTraceElement st : thread.getStackTrace()) {
+            LockInfo lock = thread.getLockInfo();
+            String lockOwner = thread.getLockOwnerName();
+
+            sb.append("\tat " + st.toString() + "\n");
+            if (index == 0) {
+                if (("java.lang.Object".equals(st.getClassName())) && ("wait".equals(st.getMethodName())))
+                {
+                    if (lock != null)
+                    {
+                        sb.append("\t- waiting on ");
+                        printLock(sb, lock);
+                        sb.append("\n");
+                    }
+                }
+                else if (lock != null) {
+                    if (lockOwner == null)
+                    {
+                        sb.append("\t- parking to wait for ");
+                        printLock(sb, lock);
+                        sb.append("\n");
+                    }
+                    else
+                    {
+                        sb.append("\t- waiting to lock ");
+                        printLock(sb, lock);
+                        sb.append(" owned by \"" + lockOwner + "\" t@" + thread.getLockOwnerId() + "\n");
+                    }
+                }
+            }
+            printMonitors(sb, monitors, index);
+            index++;
+        }
+        StringBuilder jnisb = new StringBuilder();
+        printMonitors(jnisb, monitors, -1);
+        if (jnisb.length() > 0)
+        {
+            sb.append("   JNI locked monitors:\n");
+            sb.append(jnisb);
+        }
+        if (threadMXBean.isSynchronizerUsageSupported())
+        {
+            sb.append("\n   Locked ownable synchronizers:");
+            LockInfo[] synchronizers = thread.getLockedSynchronizers();
+            if ((synchronizers == null) || (synchronizers.length == 0)) {
+                sb.append("\n\t- None\n");
+            } else {
+                for (LockInfo li : synchronizers)
+                {
+                    sb.append("\n\t- locked ");
+                    printLock(sb, li);
+                    sb.append("\n");
+                }
+            }
+        }
+    }
+
+    /**
+     * 打印Monitor信息
+     * @param sb
+     * @param monitors
+     * @param index
+     */
+    private void printMonitors(StringBuilder sb, MonitorInfo[] monitors, int index) {
+        if (monitors != null) {
+            for (MonitorInfo mi : monitors) {
+                if (mi.getLockedStackDepth() == index)
+                {
+                    sb.append("\t- locked ");
+                    printLock(sb, mi);
+                    sb.append("\n");
+                }
+            }
+        }
+    }
+
+    /**
+     * 打印线程的基本信息，精简实现
+     * Hotspot中线程转储中线程信息格式比较丰富，例如"JMX server connection timeout 42" #42 daemon prio=5 os_prio=0 tid=0x000000001a215800 nid=0x350 in Object.wait() [0x000000001ef0e000]
+     * os_prio字段只做了linux系统的实现
+     * tid字段有说是线程id的，有说是线程地址的
+     * nid字段是对应操作系统的线程ID的16进制，比较难于实现
+     * 最后中括号内的字段含义不明
+     * 以上3个字段比较难于实现，标记为0x
+     * 如果不带这些字段，fastthread网站无法解析
+     * @param sb
+     * @param thread
+     * @return
+     */
+    private void printThreadBasicInfo(StringBuilder sb, ThreadInfo thread) {
+        String BASIC_INFO = "\n\"{0}\" #{1} {2} prio={3} os_prio={4} tid={5} nid={6} [{7}]\n";
+        Thread t = threadMap.get(thread.getThreadId());
+        String name = thread.getThreadName();
+        String id = thread.getThreadId()+"";
+        String daemon = t!=null?"daemon":"";
+        String priority = t!=null?t.getPriority()+"":"5";
+        String osPriority = t!=null?5-t.getPriority()+"":"0";
+        String tid = "0x";
+        String nid = "0x";
+        String address = "0x";
+        sb.append(MessageFormat.format(BASIC_INFO, name, id, daemon, priority, osPriority, tid, nid, address));
+    }
+
+    /**
+     * 打印Lock信息
+     * @param sb
+     * @param lock
+     */
+    private void printLock(StringBuilder sb, LockInfo lock) {
+        String id = Integer.toHexString(lock.getIdentityHashCode());
+        String className = lock.getClassName();
+        sb.append("<" + id + "> (a " + className + ")");
     }
 }
