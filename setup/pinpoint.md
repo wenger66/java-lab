@@ -1,4 +1,4 @@
-# 搭建PinPoint
+# 初探PinPoint
 
 
 ## 安装JDK
